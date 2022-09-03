@@ -41,7 +41,7 @@ contract VulnerableContract1{
         // msg.sender fallback() function will again call withdraw() function
         (bool success, ) = msg.sender.call{value: balance}("");
 
-        require(success, "Failed to failed eth");
+        require(success, "Failed to transfer eth");
 
         // this is the source of vulnerability
         // although condition is perfectly defined, its positioning is wrong
@@ -51,9 +51,26 @@ contract VulnerableContract1{
 
     }
 
+    // this is the right way of writing above function
+    // any external calls should be made at the end 
+    // state variables are updated before external calls
+    function withdrawCorrected() external payable {
+        
+        uint256 balance = s_balances[msg.sender];
+        require(balance > 0, "No balance in account");
+
+        // balances updated before we external call in next step
+        s_balances[msg.sender] = 0;
+
+        (bool success, ) = msg.sender.call{value: balance}("");
+        require(success, "Failed to transfer eth");
+    }
+
     // gets balance for this address
     function getBalance() public view returns(uint256){
         return address(this).balance;
+
+
     }
 
 }

@@ -46,4 +46,20 @@ contract VulnerableContract2 is ERC721{
 
     }
 
+    function WhiteListMintCorrected(bytes32[] calldata _merkleProof, bytes32 _rootHash, uint256 mintTokens) public {
+
+        require(s_mintedTokens[msg.sender] <1, "Already minted");
+        
+        // placed a max cap per address
+        require(mintTokens >0 && mintTokens < 5, "Number of tokens cannot be less than 0");
+
+        require(s_tokensMinted + mintTokens <= s_maxSupply, "All tokens minted");
+
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+
+        require(MerkleProof.verify(_merkleProof, _rootHash, leaf ));
+
+        _safeMint(msg.sender, mintTokens);
+    }
+
 }
